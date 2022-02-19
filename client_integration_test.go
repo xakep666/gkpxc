@@ -14,7 +14,7 @@ import (
 )
 
 func TestClient_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestClient_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
@@ -135,7 +135,7 @@ func TestClient_Integration(t *testing.T) {
 }
 
 func TestClient_Client_locks_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,7 +146,7 @@ func TestClient_Client_locks_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
@@ -190,7 +190,7 @@ func TestClient_Client_locks_Integration(t *testing.T) {
 }
 
 func TestClient_External_locks_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +201,7 @@ func TestClient_External_locks_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
