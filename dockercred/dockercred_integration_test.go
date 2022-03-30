@@ -109,7 +109,7 @@ func TestKeepassXCHelper_Integration(t *testing.T) {
 	})
 
 	t.Run("delete", func(t *testing.T) {
-		t.Skip("TODO: wait for new release")
+		t.Skip("TODO: find way to press approval button")
 
 		err := helper.Delete("https://site1.com")
 		if err != nil {

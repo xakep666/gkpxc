@@ -104,7 +104,41 @@ func TestClient_Integration(t *testing.T) {
 	})
 
 	t.Run("DeleteEntry", func(t *testing.T) {
-		t.Skip("TODO: wait for new release")
+		t.Skip("TODO: find way to press approval button")
+
+		err := client.SetLogin(context.Background(), gkpxc.SetLoginRequest{
+			URL:      "http://site-to-del.com",
+			Login:    "user3",
+			Password: "pass3",
+		})
+		if err != nil {
+			t.Fatal("Set login", err)
+		}
+
+		logins, err := client.GetLogins(context.Background(), gkpxc.GetLoginsRequest{
+			URL: "http://site-to-del.com",
+		})
+		if err != nil {
+			t.Fatal("Get logins", err)
+		}
+
+		if logins.Count != 1 {
+			t.Fatalf("Unexpected logins count")
+		}
+
+		err = client.DeleteEntry(context.Background(), gkpxc.DeleteEntryRequest{
+			UUID: logins.Entries[0].UUID,
+		})
+		if err != nil {
+			t.Fatal("Delete entry", err)
+		}
+
+		logins, err = client.GetLogins(context.Background(), gkpxc.GetLoginsRequest{
+			URL: "http://site-to-del.com",
+		})
+		if err == nil {
+			t.Fatalf("Unexpected logins found: %+v", logins.Entries)
+		}
 	})
 
 	t.Run("GeneratePassword", func(t *testing.T) {
