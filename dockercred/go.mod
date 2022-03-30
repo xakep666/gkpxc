@@ -2,12 +2,10 @@ module github.com/xakep666/gkpxc/dockercred
 
 go 1.17
 
-replace github.com/xakep666/gkpxc => ../
-
 require (
 	github.com/99designs/keyring v1.2.0
 	github.com/docker/docker-credential-helpers v0.6.4
-	github.com/xakep666/gkpxc v0.0.0-00010101000000-000000000000
+	github.com/xakep666/gkpxc v0.0.0-20220219113543-60ccb9149a9f
 )
 
 require (
@@ -22,3 +20,5 @@ require (
 	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 )
+
+replace github.com/xakep666/gkpxc => ../

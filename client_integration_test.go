@@ -14,7 +14,7 @@ import (
 )
 
 func TestClient_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestClient_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
@@ -104,7 +104,41 @@ func TestClient_Integration(t *testing.T) {
 	})
 
 	t.Run("DeleteEntry", func(t *testing.T) {
-		t.Skip("TODO: wait for new release")
+		t.Skip("TODO: find way to press approval button")
+
+		err := client.SetLogin(context.Background(), gkpxc.SetLoginRequest{
+			URL:      "http://site-to-del.com",
+			Login:    "user3",
+			Password: "pass3",
+		})
+		if err != nil {
+			t.Fatal("Set login", err)
+		}
+
+		logins, err := client.GetLogins(context.Background(), gkpxc.GetLoginsRequest{
+			URL: "http://site-to-del.com",
+		})
+		if err != nil {
+			t.Fatal("Get logins", err)
+		}
+
+		if logins.Count != 1 {
+			t.Fatalf("Unexpected logins count")
+		}
+
+		err = client.DeleteEntry(context.Background(), gkpxc.DeleteEntryRequest{
+			UUID: logins.Entries[0].UUID,
+		})
+		if err != nil {
+			t.Fatal("Delete entry", err)
+		}
+
+		logins, err = client.GetLogins(context.Background(), gkpxc.GetLoginsRequest{
+			URL: "http://site-to-del.com",
+		})
+		if err == nil {
+			t.Fatalf("Unexpected logins found: %+v", logins.Entries)
+		}
 	})
 
 	t.Run("GeneratePassword", func(t *testing.T) {
@@ -135,7 +169,7 @@ func TestClient_Integration(t *testing.T) {
 }
 
 func TestClient_Client_locks_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,7 +180,7 @@ func TestClient_Client_locks_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
@@ -190,7 +224,7 @@ func TestClient_Client_locks_Integration(t *testing.T) {
 }
 
 func TestClient_External_locks_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +235,7 @@ func TestClient_External_locks_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"testing"
 )
 
 var dir string
@@ -27,33 +28,37 @@ type KeeRun struct {
 	password []byte
 }
 
-func NewKeeRun() (*KeeRun, error) {
+func NewKeeRun(t *testing.T) (*KeeRun, error) {
 	passBytes, err := os.ReadFile(filepath.Join(dir, "testdata", "passwd"))
 	if err != nil {
 		return nil, fmt.Errorf("password read: %w", err)
 	}
 
-	keepassxc, err := exec.LookPath("keepassxc")
-	if err != nil {
-		return nil, fmt.Errorf("keepassxc lookup: %w", err)
+	keepassxcExecutable := os.Getenv("KEEPASSXC_EXECUTABLE")
+	if keepassxcExecutable == "" {
+		keepassxcExecutable = "keepassxc"
 	}
 
+	cmd := exec.Command(keepassxcExecutable,
+		"--pw-stdin",
+		"--config", filepath.Join(dir, "testdata", "config.ini"),
+		filepath.Join(dir, "testdata", "test.kdbx"),
+	)
+	cmd.Stdin = bytes.NewReader(passBytes)
+	cmd.Stdout = &tLogWriter{T: t, Prefix: "[keepassxc]"}
+	cmd.Stderr = &tLogWriter{T: t, Prefix: "[keepassxc err]"}
+
 	return &KeeRun{
-		Cmd: &exec.Cmd{
-			Path: keepassxc,
-			Args: append([]string{"keepassxc"},
-				"--pw-stdin",
-				"--config", filepath.Join(dir, "testdata", "config.ini"),
-				"--platform", "offscreen",
-				filepath.Join(dir, "testdata", "test.kdbx")),
-			Stdin: bytes.NewReader(passBytes),
-		},
+		Cmd:      cmd,
 		password: passBytes,
 	}, nil
 }
 
 func (k *KeeRun) Lock() error {
-	return exec.Command(k.Path, "--lock").Run()
+	cmd := exec.Command(k.Path, "--lock")
+	cmd.Stdout = k.Stdout
+	cmd.Stderr = k.Stderr
+	return cmd.Run()
 }
 
 func (k *KeeRun) KillWait() {
@@ -70,4 +75,14 @@ func DecodeAssociationCreds(to interface{}) error {
 	defer f.Close()
 
 	return json.NewDecoder(f).Decode(to)
+}
+
+type tLogWriter struct {
+	*testing.T
+	Prefix string
+}
+
+func (t *tLogWriter) Write(p []byte) (n int, err error) {
+	t.Logf("%s: %s", t.Prefix, p)
+	return len(p), nil
 }

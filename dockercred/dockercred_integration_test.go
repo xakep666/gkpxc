@@ -15,8 +15,12 @@ import (
 	"github.com/xakep666/gkpxc/internal/keerun"
 )
 
+func init() {
+	keyring.Debug = true
+}
+
 func TestKeepassXCHelper_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun()
+	k, err := keerun.NewKeeRun(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +31,7 @@ func TestKeepassXCHelper_Integration(t *testing.T) {
 
 	t.Cleanup(func() { k.KillWait() })
 
-	time.Sleep(1 * time.Second) // time to start
+	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
 	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
@@ -105,7 +109,7 @@ func TestKeepassXCHelper_Integration(t *testing.T) {
 	})
 
 	t.Run("delete", func(t *testing.T) {
-		t.Skip("TODO: wait for new release")
+		t.Skip("TODO: find way to press approval button")
 
 		err := helper.Delete("https://site1.com")
 		if err != nil {

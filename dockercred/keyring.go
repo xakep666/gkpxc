@@ -25,13 +25,14 @@ func SetupKeyring(service string) (keyring.Keyring, error) {
 	}
 
 	return keyring.Open(keyring.Config{
-		AllowedBackends:         backends,
-		WinCredPrefix:           service,
-		KeychainName:            service,
-		KWalletAppID:            service,
-		KWalletFolder:           service,
-		LibSecretCollectionName: service,
-		FileDir:                 fileBackendDir(service),
+		AllowedBackends:          backends,
+		WinCredPrefix:            service,
+		KeychainName:             "login",
+		KeychainTrustApplication: true,
+		KWalletAppID:             service,
+		KWalletFolder:            service,
+		LibSecretCollectionName:  service,
+		FileDir:                  fileBackendDir(service),
 		FilePasswordFunc: func(prompt string) (string, error) {
 			out, err := exec.Command(promptCmd, prompt).Output()
 			return string(out), err
