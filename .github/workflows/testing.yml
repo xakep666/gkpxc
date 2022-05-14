@@ -70,23 +70,15 @@ jobs:
       - name: Download dependencies
         run: go mod download -x
 
-      - name: Download dependencies (dockercred)
-        working-directory: dockercred
-        run: go mod download -x
-
       - name: Install KeepassXC
         run: ${{ matrix.install_keepassxc }}
 
       - name: Test
         run: go test -race -coverprofile='coverage.txt' -covermode=atomic -tags=integration -run='.*_Integration$' -count=1 ./...
 
-      - name: Test (dockercred)
-        working-directory: dockercred
-        run: go test -race -coverprofile='coverage.txt' -covermode=atomic -tags=integration -run='.*_Integration$' -count=1 ./...
-
       - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.txt,./dockercred/coverage.txt
+          files: ./coverage.txt
           flags: integrationtests
           verbose: true
