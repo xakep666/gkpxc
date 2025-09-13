@@ -3,12 +3,10 @@ package keerun
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"testing"
 )
 
 var dir string
@@ -24,14 +22,20 @@ func init() {
 
 type KeeRun struct {
 	*exec.Cmd
-
-	password []byte
 }
 
-func NewKeeRun(t *testing.T) (*KeeRun, error) {
+type T interface {
+	Helper()
+	Cleanup(func())
+	Fatalf(msg string, args ...any)
+	Logf(msg string, args ...any)
+}
+
+func NewKeeRun(t T) *KeeRun {
+	t.Helper()
 	passBytes, err := os.ReadFile(filepath.Join(dir, "testdata", "passwd"))
 	if err != nil {
-		return nil, fmt.Errorf("password read: %w", err)
+		t.Fatalf("password read: %s", err)
 	}
 
 	keepassxcExecutable := os.Getenv("KEEPASSXC_EXECUTABLE")
@@ -45,44 +49,60 @@ func NewKeeRun(t *testing.T) (*KeeRun, error) {
 		filepath.Join(dir, "testdata", "test.kdbx"),
 	)
 	cmd.Stdin = bytes.NewReader(passBytes)
-	cmd.Stdout = &tLogWriter{T: t, Prefix: "[keepassxc]"}
-	cmd.Stderr = &tLogWriter{T: t, Prefix: "[keepassxc err]"}
+	cmd.Stdout = &tLogWriter{T: t, Prefix: "[keepassxc] "}
+	cmd.Stderr = &tLogWriter{T: t, Prefix: "[keepassxc err] "}
+
+	t.Cleanup(func() {
+		cmd.Process.Kill()
+		cmd.Wait()
+	})
 
 	return &KeeRun{
-		Cmd:      cmd,
-		password: passBytes,
-	}, nil
+		Cmd: cmd,
+	}
 }
 
-func (k *KeeRun) Lock() error {
+func (k *KeeRun) Start(t T) {
+	t.Helper()
+
+	if err := k.Cmd.Start(); err != nil {
+		t.Fatalf("start: %s", err)
+	}
+}
+
+func (k *KeeRun) Lock(t T) {
+	t.Helper()
+
 	cmd := exec.Command(k.Path, "--lock")
 	cmd.Stdout = k.Stdout
 	cmd.Stderr = k.Stderr
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("lock: %s", err)
+	}
 }
 
-func (k *KeeRun) KillWait() {
-	k.Process.Kill()
-	k.Wait()
-}
+func DecodeAssociationCreds(t T, to any) {
+	t.Helper()
 
-func DecodeAssociationCreds(to interface{}) error {
 	f, err := os.Open(filepath.Join(dir, "testdata", "assoc.json"))
 	if err != nil {
-		return err
+		t.Fatalf("open file: %s", err)
 	}
 
 	defer f.Close()
 
-	return json.NewDecoder(f).Decode(to)
+	if err := json.NewDecoder(f).Decode(to); err != nil {
+		t.Fatalf("decode: %s", err)
+	}
 }
 
 type tLogWriter struct {
-	*testing.T
+	T
 	Prefix string
 }
 
 func (t *tLogWriter) Write(p []byte) (n int, err error) {
+	t.Helper()
 	t.Logf("%s: %s", t.Prefix, p)
 	return len(p), nil
 }
