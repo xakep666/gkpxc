@@ -6,7 +6,7 @@ This helper allows to store your docker credentials in KeepassXC database.
 # Installation
 
 * Ensure that your `$GOBIN` directory present in `$PATH`.
-* `go get github.com/xakep666/gkpxc/dockercred/cmd/docker-credential-keepassxc`
+* `go get github.com/xakep666/gkpxc/cmd/docker-credential-keepassxc`
 * Set `"credsStore"` to `"keepassxc"` in your docker client config file (`.docker/config.json`).
 
 # Usage
