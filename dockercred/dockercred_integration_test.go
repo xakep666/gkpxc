@@ -20,23 +20,14 @@ func init() {
 }
 
 func TestKeepassXCHelper_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	k := keerun.NewKeeRun(t)
 
-	if err = k.Start(); err != nil {
-		t.Fatal("Start keepass", err)
-	}
-
-	t.Cleanup(func() { k.KillWait() })
+	k.Start(t)
 
 	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
-	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
-		t.Fatal("Get credentials", err)
-	}
+	keerun.DecodeAssociationCreds(t, &creds)
 
 	jsonCreds, err := json.Marshal(creds)
 	if err != nil {

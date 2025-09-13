@@ -14,23 +14,14 @@ import (
 )
 
 func TestClient_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	k := keerun.NewKeeRun(t)
 
-	if err = k.Start(); err != nil {
-		t.Fatal("Start keepass", err)
-	}
-
-	t.Cleanup(func() { k.KillWait() })
+	k.Start(t)
 
 	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
-	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
-		t.Fatal("Get creds", err)
-	}
+	keerun.DecodeAssociationCreds(t, &creds)
 
 	client, err := gkpxc.NewClient(context.Background())
 	if err != nil {
@@ -169,23 +160,14 @@ func TestClient_Integration(t *testing.T) {
 }
 
 func TestClient_Client_locks_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	k := keerun.NewKeeRun(t)
 
-	if err = k.Start(); err != nil {
-		t.Fatal("Start keepass", err)
-	}
-
-	t.Cleanup(func() { k.KillWait() })
+	k.Start(t)
 
 	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
-	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
-		t.Fatal("Get creds", err)
-	}
+	keerun.DecodeAssociationCreds(t, &creds)
 
 	var (
 		wg          sync.WaitGroup
@@ -224,23 +206,14 @@ func TestClient_Client_locks_Integration(t *testing.T) {
 }
 
 func TestClient_External_locks_Integration(t *testing.T) {
-	k, err := keerun.NewKeeRun(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	k := keerun.NewKeeRun(t)
 
-	if err = k.Start(); err != nil {
-		t.Fatal("Start keepass", err)
-	}
-
-	t.Cleanup(func() { k.KillWait() })
+	k.Start(t)
 
 	time.Sleep(30 * time.Second) // time to start
 
 	var creds gkpxc.AssociationCredentials
-	if err = keerun.DecodeAssociationCreds(&creds); err != nil {
-		t.Fatal("Get creds", err)
-	}
+	keerun.DecodeAssociationCreds(t, &creds)
 
 	var (
 		wg          sync.WaitGroup
@@ -258,9 +231,7 @@ func TestClient_External_locks_Integration(t *testing.T) {
 
 	client.SetAssociationCredentials(&creds)
 
-	if err = k.Lock(); err != nil {
-		t.Fatal("Lock database", err)
-	}
+	k.Lock(t)
 
 	wg.Wait()
 	if len(lockSignals) != 1 || !lockSignals[0] {
